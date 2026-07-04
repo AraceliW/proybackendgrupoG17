@@ -28,6 +28,12 @@ const registrar = async (req, res) => {
       });
     }
 
+    if (!nombre || !apellido || !dni || !email || !password) {
+      return res.status(400).json({
+        mensaje: 'Faltan datos obligatorios'
+      });
+    } 
+
     const passwordHasheada = await bcrypt.hash(password, 10);
 
     const usuario = await Usuario.create({
@@ -85,6 +91,12 @@ const login = async (req, res) => {
     if (!passwordValida) {
       return res.status(401).json({
         mensaje: 'Credenciales incorrectas'
+      });
+    }
+
+    if (!email || !password) {
+      return res.status(400).json({
+        mensaje: 'Email y contraseña son obligatorios'
       });
     }
 

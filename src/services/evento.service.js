@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 const { Evento, TipoEntrada } = require('../models');
 
-const listar = async ({ buscar, fecha }) => {
+const listar = async ({ buscar, fecha, estado }) => {
   const where = {};
 
   if (buscar) {
@@ -12,6 +12,10 @@ const listar = async ({ buscar, fecha }) => {
 
   if (fecha) {
     where.fecha = fecha;
+  }
+
+  if (estado) {
+    where.estado = estado;
   }
 
   return await Evento.findAll({

@@ -16,7 +16,6 @@ const uploadEvento = require('../middlewares/uploadEvento.middleware');
 const router = express.Router();
 
 router.get('/', listarEventos);
-router.get('/:id', obtenerEventoPorId);
 
 router.post('/', verificarToken, verificarRol('admin'), crearEvento);
 router.put('/:id', verificarToken, verificarRol('admin'), actualizarEvento);
@@ -32,5 +31,7 @@ router.put(
   ]),
   subirImagenesEvento
 );
+
+router.get('/:id', obtenerEventoPorId);
 
 module.exports = router;

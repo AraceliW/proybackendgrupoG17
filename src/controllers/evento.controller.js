@@ -33,12 +33,22 @@ const obtenerEventoPorId = async (req, res) => {
 
 const crearEvento = async (req, res) => {
   try {
+
+    const { nombre, categoriaDeporte, fecha, hora, estadio, ciudad } = req.body;
+
+    if (!nombre || !categoriaDeporte || !fecha || !hora || !estadio || !ciudad) {
+      return res.status(400).json({
+        mensaje: 'Faltan datos obligatorios del evento'
+      });
+    }
+
     const evento = await eventoService.crear(req.body);
 
     res.status(201).json({
       mensaje: 'Evento creado correctamente',
       evento
     });
+
   } catch (error) {
     res.status(500).json({
       mensaje: 'Error al crear evento',

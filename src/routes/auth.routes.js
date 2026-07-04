@@ -20,11 +20,5 @@ router.get('/perfil', verificarToken, (req, res) => {
   });
 });
 
-router.get('/admin', verificarToken, verificarRol('admin'), (req, res) => {
-  res.json({
-    mensaje: 'Ruta exclusiva para administrador'
-  });
-});
-
 
 module.exports = router;

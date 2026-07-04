@@ -19,14 +19,13 @@ const adminEventoRoutes = require('./routes/adminEvento.routes');
 const homeRoutes = require('./routes/home.routes');
 const mercadoPagoRoutes = require('./routes/mercadoPago.routes');
 
-
 const app = express();
 
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('src/uploads'));
 app.use(morgan('dev'));
+app.use('/uploads', express.static('src/uploads'));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -34,6 +33,12 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+
+app.get('/', (req, res) => {
+  res.json({
+    mensaje: 'API DIBUTICK funcionando correctamente'
+  });
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/eventos', eventoRoutes);
@@ -48,14 +53,6 @@ app.use('/api/admin/tickets', adminTicketRoutes);
 app.use('/api/admin/usuarios', adminUsuarioRoutes);
 app.use('/api/admin/eventos', adminEventoRoutes);
 app.use('/api/home', homeRoutes);
-app.use('/uploads', express.static('src/uploads'));
 app.use('/api/mercadopago', mercadoPagoRoutes);
-
-
-app.get('/', (req, res) => {
-  res.json({
-    mensaje: 'API DIBUTICK funcionando correctamente'
-  });
-});
 
 module.exports = app;
