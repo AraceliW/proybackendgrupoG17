@@ -22,6 +22,22 @@ const reservarCompra = async (req, res) => {
   }
 };
 
+const listarMisCompras = async (req, res) => {
+  try {
+    const compras = await compraService.listarMisCompras(req.usuario.id);
+
+    res.json({
+      total: compras.length,
+      compras
+    });
+  } catch (error) {
+    res.status(500).json({
+      mensaje: 'Error al listar mis compras',
+      error: error.message
+    });
+  }
+};
+
 const confirmarCompra = async (req, res) => {
   try {
     const resultado = await compraService.confirmarCompra(
@@ -50,5 +66,6 @@ const confirmarCompra = async (req, res) => {
 
 module.exports = {
   reservarCompra,
+  listarMisCompras,
   confirmarCompra
 };

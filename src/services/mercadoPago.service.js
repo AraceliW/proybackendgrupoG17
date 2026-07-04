@@ -2,6 +2,7 @@ const { Compra, DetalleCompra, TipoEntrada } = require('../models');
 const { preference } = require('../config/mercadoPago');
 const { Payment } = require('mercadopago');
 const { MercadoPagoConfig } = require('mercadopago');
+const { MerchantOrder } = require('mercadopago');
 const compraService = require('./compra.service');
 
 const crearPreferenciaPago = async (compraId, usuarioId) => {
@@ -66,29 +67,93 @@ const client = new MercadoPagoConfig({
 });
 
 const payment = new Payment(client);
+const merchantOrder = new MerchantOrder(client);
 
-const procesarWebhook = async (body) => {
-  const paymentId = body?.data?.id || body?.id;
+const procesarWebhook = async (body, query) => {
+  console.log('========== WEBHOOK MERCADO PAGO ==========');
+  console.log('Body:', body);
+  console.log('Query:', query);
 
-  if (!paymentId) {
-    return { mensaje: 'Webhook recibido sin paymentId' };
+  const topic = query?.topic || query?.type || body?.topic || body?.type;
+
+  const id =
+    body?.data?.id ||
+    query?.['data.id'] ||
+    query?.id ||
+    body?.resource ||
+    body?.id;
+
+  console.log('Topic:', topic);
+  console.log('ID recibido:', id);
+
+  if (!id) {
+    return { mensaje: 'Webhook recibido sin ID' };
   }
 
-  const pago = await payment.get({ id: paymentId });
+  try {
+    let pago = null;
 
-  if (pago.status === 'approved') {
+    if (topic === 'payment' || body?.type === 'payment') {
+      pago = await payment.get({ id });
+    }
+
+    if (topic === 'merchant_order') {
+      const orden = await merchantOrder.get({ merchantOrderId: id });
+
+      if (!orden.payments || orden.payments.length === 0) {
+        return { mensaje: 'Orden recibida sin pagos asociados todavía' };
+      }
+
+      const pagoAprobado = orden.payments.find(
+        (p) => p.status === 'approved'
+      );
+
+      if (!pagoAprobado) {
+        return {
+          mensaje: 'Orden recibida, pero sin pago aprobado',
+          estado: orden.order_status
+        };
+      }
+
+      pago = await payment.get({ id: pagoAprobado.id });
+    }
+
+    if (!pago) {
+      return {
+        mensaje: 'Webhook ignorado: no corresponde a un pago procesable'
+      };
+    }
+
+    console.log('Pago consultado:', pago.status);
+
+    if (pago.status !== 'approved') {
+      return {
+        mensaje: `Pago recibido con estado: ${pago.status}`
+      };
+    }
+
     const codigoCompra = pago.external_reference;
+
+    if (!codigoCompra) {
+      return {
+        mensaje: 'Pago aprobado sin external_reference'
+      };
+    }
 
     const compra = await Compra.findOne({
       where: { codigoCompra }
     });
 
     if (!compra) {
-      return { error: 'Compra no encontrada' };
+      return {
+        mensaje: 'Compra no encontrada para este pago'
+      };
     }
 
     if (compra.estado === 'confirmada') {
-      return { mensaje: 'Compra ya confirmada' };
+      return {
+        mensaje: 'Compra ya confirmada'
+      };
     }
 
     const resultado = await compraService.confirmarCompra(
@@ -100,11 +165,14 @@ const procesarWebhook = async (body) => {
       mensaje: 'Pago aprobado y compra confirmada',
       resultado
     };
-  }
+  } catch (error) {
+    console.log('Webhook ignorado por error controlado:', error.message);
 
-  return {
-    mensaje: `Pago recibido con estado: ${pago.status}`
-  };
+    return {
+      mensaje: 'Webhook recibido pero no procesado',
+      error: error.message
+    };
+  }
 };
 
 module.exports = {

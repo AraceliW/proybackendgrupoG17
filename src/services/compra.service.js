@@ -1,4 +1,4 @@
-const { Compra, DetalleCompra, TipoEntrada } = require('../models');
+const { Compra, DetalleCompra, TipoEntrada, Evento, Ticket } = require('../models');
 const ticketService = require('./ticket.service');
 const emailService = require('./email.service');
 const { Usuario } = require('../models');
@@ -97,7 +97,37 @@ const confirmarCompra = async (compraId, usuarioId) => {
   return { compra, ticket };  
 };
 
+const listarMisCompras = async (usuarioId) => {
+  return await Compra.findAll({
+    where: { usuarioId },
+    include: [
+      {
+        model: DetalleCompra,
+        as: 'detalles',
+        include: [
+          {
+            model: TipoEntrada,
+            as: 'tipoEntrada',
+            include: [
+              {
+                model: Evento,
+                as: 'evento'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        model: Ticket,
+        as: 'ticket'
+      }
+    ],
+    order: [['fechaCompra', 'DESC']]
+  });
+};
+
 module.exports = {
   reservarCompra,
-  confirmarCompra
+  confirmarCompra,
+  listarMisCompras
 };

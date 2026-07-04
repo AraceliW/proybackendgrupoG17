@@ -27,7 +27,7 @@ const crearPreferenciaPago = async (req, res) => {
 
 const recibirWebhook = async (req, res) => {
   try {
-    const resultado = await mercadoPagoService.procesarWebhook(req.body);
+    const resultado = await mercadoPagoService.procesarWebhook(req.body, req.query);
 
     res.status(200).json(resultado);
   } catch (error) {
