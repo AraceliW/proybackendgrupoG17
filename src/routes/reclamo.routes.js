@@ -9,10 +9,16 @@ const {
 
 const verificarToken = require('../middlewares/auth.middleware');
 const verificarRol = require('../middlewares/rol.middleware');
+const validarCampos = require('../middlewares/validator.middleware');
+
+const {
+  validarCrearReclamo,
+  validarResponderReclamo
+} = require('../validators/reclamo.validator');
 
 const router = express.Router();
 
-router.post('/', verificarToken, crearReclamo);
+router.post('/', verificarToken, validarCrearReclamo, validarCampos, crearReclamo);
 
 router.get(
   '/',
@@ -31,6 +37,8 @@ router.put(
   '/:id/responder',
   verificarToken,
   verificarRol('admin'),
+  validarResponderReclamo,
+  validarCampos,
   responderReclamo
 );
 
