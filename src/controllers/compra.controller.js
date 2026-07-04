@@ -11,7 +11,7 @@ const reservarCompra = async (req, res) => {
     }
 
     res.status(201).json({
-      mensaje: 'Reserva creada correctamente. Tenés 20 minutos para completar el pago.',
+      mensaje: 'Reserva creada correctamente. Tenés 10 minutos para completar el pago.',
       compra: resultado.compra
     });
   } catch (error) {
