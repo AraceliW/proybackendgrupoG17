@@ -62,6 +62,7 @@ const obtenerEventosHome = async (filtros = {}) => {
     return {
       id: evento.id,
       nombre: evento.nombre,
+      descripcion: evento.descripcion,
       categoriaDeporte: evento.categoriaDeporte,
       fecha: evento.fecha,
       hora: evento.hora,
@@ -198,6 +199,7 @@ const obtenerEventosDestacados = async () => {
     return {
       id: evento.id,
       nombre: evento.nombre,
+      descripcion: evento.descripcion,
       categoriaDeporte: evento.categoriaDeporte,
       fecha: evento.fecha,
       hora: evento.hora,
@@ -249,6 +251,7 @@ const obtenerProximosEventos = async () => {
     return {
       id: evento.id,
       nombre: evento.nombre,
+      descripcion: evento.descripcion,
       categoriaDeporte: evento.categoriaDeporte,
       fecha: evento.fecha,
       hora: evento.hora,

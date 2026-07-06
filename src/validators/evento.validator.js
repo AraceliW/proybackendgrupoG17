@@ -25,13 +25,6 @@ const validarEvento = [
     .notEmpty()
     .withMessage('La ciudad es obligatoria'),
 
-  body('precioBase')
-    .isFloat({ gt: 0 })
-    .withMessage('El precio debe ser mayor que cero'),
-
-  body('capacidad')
-    .isInt({ gt: 0 })
-    .withMessage('La capacidad debe ser mayor que cero')
 ];
 
 module.exports = {
