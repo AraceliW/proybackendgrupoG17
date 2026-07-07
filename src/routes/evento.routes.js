@@ -38,7 +38,6 @@ router.post(
 
   crearEvento
 );
-router.put('/:id', validarEvento, validarCampos, verificarToken, verificarRol('admin'), actualizarEvento);
 router.delete('/:id', verificarToken, verificarRol('admin'), eliminarEvento);
 router.put(
   '/:id',

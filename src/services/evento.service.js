@@ -2,7 +2,9 @@ const { Op } = require('sequelize');
 const { Evento, TipoEntrada } = require('../models');
 
 const listar = async ({ buscar, fecha, estado }) => {
-  const where = {};
+  const where = {
+    estado: 'activo'
+  };
 
   if (buscar) {
     where.nombre = {
@@ -146,7 +148,19 @@ const actualizar = async (id, data) => {
 
     const tipo = tipos.find(t => t.nombre === nombre);
 
-    if (!tipo) return;
+    if (!tipo) {
+      await TipoEntrada.create({
+        nombre,
+        descripcion: `${nombre} - ${evento.nombre}`,
+        precio,
+        stock,
+        stockDisponible: stock,
+        stockReservado: 0,
+        estado: 'disponible',
+        eventoId: evento.id
+      });
+      return;
+    }
 
     // Diferencia para mantener reservas
     const diferencia = Number(stock) - Number(tipo.stock);

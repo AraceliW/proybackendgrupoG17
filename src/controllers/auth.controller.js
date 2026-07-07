@@ -16,6 +16,10 @@ const generarToken = (usuario) => {
   );
 };
 
+const { OAuth2Client } = require('google-auth-library');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 const registrar = async (req, res) => {
   try {
     const { nombre, apellido, dni, email, password, telefono } = req.body;
@@ -65,6 +69,62 @@ const registrar = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       mensaje: 'Error al registrar usuario',
+      error: error.message
+    });
+  }
+};
+
+const loginGoogle = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+
+    const email = payload.email;
+    const nombre = payload.given_name || 'Usuario';
+    const apellido = payload.family_name || '';
+
+    let usuario = await Usuario.findOne({ where: { email } });
+
+    if (!usuario) {
+      usuario = await Usuario.create({
+        nombre,
+        apellido,
+        email,
+        password: null,
+        rol: 'cliente',
+        estado: true
+      });
+    }
+
+    const token = jwt.sign(
+      { id: usuario.id, rol: usuario.rol },
+      process.env.JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+
+    res.json({
+      mensaje: 'Login con Google exitoso',
+      token,
+      usuario: {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+        email: usuario.email,
+        rol: usuario.rol,
+        dni: usuario.dni,
+        telefono: usuario.telefono
+      }
+    });
+
+  } catch (error) {
+    res.status(401).json({
+      mensaje: 'Error al iniciar sesión con Google',
       error: error.message
     });
   }
@@ -131,7 +191,41 @@ const login = async (req, res) => {
   }
 };
 
+const actualizarPerfil = async (req, res) => {
+  try {
+    const { nombre, apellido, dni, telefono } = req.body;
+
+    await req.usuario.update({
+      nombre,
+      apellido,
+      dni,
+      telefono
+    });
+
+    res.json({
+      mensaje: 'Perfil actualizado correctamente',
+      usuario: {
+        id: req.usuario.id,
+        nombre: req.usuario.nombre,
+        apellido: req.usuario.apellido,
+        dni: req.usuario.dni,
+        email: req.usuario.email,
+        telefono: req.usuario.telefono,
+        rol: req.usuario.rol
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      mensaje: 'Error al actualizar perfil',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   registrar,
-  login
+  loginGoogle,
+  login,
+  actualizarPerfil
 };

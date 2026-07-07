@@ -1,5 +1,10 @@
 const express = require('express');
-const { registrar, login } = require('../controllers/auth.controller');
+const {
+  registrar,
+  login,
+  loginGoogle,
+  actualizarPerfil
+} = require('../controllers/auth.controller');
 const verificarToken = require('../middlewares/auth.middleware');
 const verificarRol = require('../middlewares/rol.middleware');
 const validarCampos = require('../middlewares/validator.middleware');
@@ -11,6 +16,7 @@ const {
 const router = express.Router();
 
 router.post('/registro', validarRegistro, validarCampos, registrar);
+
 router.post('/login', validarLogin, validarCampos, login);
 router.get('/perfil', verificarToken, (req, res) => {
   res.json({
@@ -24,6 +30,9 @@ router.get('/perfil', verificarToken, (req, res) => {
     }
   });
 });
+
+router.post('/google', loginGoogle);
+router.put('/perfil', verificarToken, actualizarPerfil);
 
 
 module.exports = router;
