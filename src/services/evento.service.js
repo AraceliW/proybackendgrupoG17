@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const { Evento, TipoEntrada } = require('../models');
+const { obtenerCoordenadas } = require('./googleMaps.service');
 
 const listar = async ({ buscar, fecha, estado }) => {
   const where = {
@@ -45,7 +46,10 @@ const obtenerPorId = async (id) => {
 
 const crear = async (data) => {
 
+  const direccionCompleta =
+  `${data.direccion}, ${data.ciudad}`;
 
+  const coordenadas = await obtenerCoordenadas(direccionCompleta);
   const evento = await Evento.create({
     nombre: data.nombre,
     descripcion: data.descripcion,
@@ -122,6 +126,14 @@ const actualizar = async (id, data) => {
 
   if (!evento) return null;
 
+  const direccionCompleta = [
+    data.estadio,
+    data.direccion,
+    data.ciudad,
+    "Argentina"
+].filter(Boolean).join(", ");
+
+const coordenadas = await obtenerCoordenadas(direccionCompleta);
   // Actualizar datos del evento
   await evento.update({
     nombre: data.nombre,
@@ -133,6 +145,8 @@ const actualizar = async (id, data) => {
     ciudad: data.ciudad,
     direccion: data.direccion,
     youtubeVideoId: data.youtubeVideoId,
+    latitud: coordenadas?.latitud || evento.latitud,
+    longitud: coordenadas?.longitud || evento.longitud,
     imagenBanner: data.imagenBanner || evento.imagenBanner
   });
 
