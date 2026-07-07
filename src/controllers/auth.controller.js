@@ -53,12 +53,14 @@ const registrar = async (req, res) => {
       mensaje: 'Usuario registrado correctamente',
       token,
       usuario: {
-        id: usuario.id,
-        nombre: usuario.nombre,
-        apellido: usuario.apellido,
-        email: usuario.email,
-        rol: usuario.rol
-      }
+      id: usuario.id,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      dni: usuario.dni,
+      email: usuario.email,
+      telefono: usuario.telefono,
+      rol: usuario.rol
+    }
     });
   } catch (error) {
     res.status(500).json({
@@ -112,12 +114,14 @@ const login = async (req, res) => {
       mensaje: 'Login correcto',
       token,
       usuario: {
-        id: usuario.id,
-        nombre: usuario.nombre,
-        apellido: usuario.apellido,
-        email: usuario.email,
-        rol: usuario.rol
-      }
+      id: usuario.id,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      dni: usuario.dni,
+      email: usuario.email,
+      telefono: usuario.telefono,
+      rol: usuario.rol
+    }
     });
   } catch (error) {
     res.status(500).json({

@@ -42,17 +42,159 @@ const obtenerPorId = async (id) => {
 };
 
 const crear = async (data) => {
-  return await Evento.create(data);
+
+
+  const evento = await Evento.create({
+    nombre: data.nombre,
+    descripcion: data.descripcion,
+    categoriaDeporte: data.categoriaDeporte,
+    fecha: data.fecha,
+    hora: data.hora,
+    estadio: data.estadio,
+    ciudad: data.ciudad,
+    direccion: data.direccion,
+    youtubeVideoId: data.youtubeVideoId,
+    imagenBanner: data.imagenBanner || null,
+    estado: 'activo'
+  });
+
+  const tipos = [
+    {
+      nombre: 'General',
+      precio: data.generalPrecio,
+      stock: data.generalStock
+    },
+    {
+      nombre: 'Popular',
+      precio: data.popularPrecio,
+      stock: data.popularStock
+    },
+    {
+      nombre: 'Platea',
+      precio: data.plateaPrecio,
+      stock: data.plateaStock
+    },
+    {
+      nombre: 'VIP',
+      precio: data.vipPrecio,
+      stock: data.vipStock
+    },
+    {
+      nombre: 'Palco',
+      precio: data.palcoPrecio,
+      stock: data.palcoStock
+    }
+  ];
+
+  for (const tipo of tipos) {
+
+    await TipoEntrada.create({
+
+      nombre: tipo.nombre,
+
+      descripcion: `${tipo.nombre} - ${evento.nombre}`,
+
+      precio: tipo.precio,
+
+      stock: tipo.stock,
+
+      stockDisponible: tipo.stock,
+
+      stockReservado: 0,
+
+      estado: 'disponible',
+
+      eventoId: evento.id
+
+    });
+
+  }
+
+  return evento;
+
 };
 
 const actualizar = async (id, data) => {
+
   const evento = await Evento.findByPk(id);
 
   if (!evento) return null;
 
-  await evento.update(data);
+  // Actualizar datos del evento
+  await evento.update({
+    nombre: data.nombre,
+    descripcion: data.descripcion,
+    categoriaDeporte: data.categoriaDeporte,
+    fecha: data.fecha,
+    hora: data.hora,
+    estadio: data.estadio,
+    ciudad: data.ciudad,
+    direccion: data.direccion,
+    youtubeVideoId: data.youtubeVideoId,
+    imagenBanner: data.imagenBanner || evento.imagenBanner
+  });
 
-  return evento;
+  // Obtener todos los tipos de entrada
+  const tipos = await TipoEntrada.findAll({
+    where: {
+      eventoId: evento.id
+    }
+  });
+
+  // Función auxiliar
+  const actualizarTipo = async (nombre, precio, stock) => {
+
+    const tipo = tipos.find(t => t.nombre === nombre);
+
+    if (!tipo) return;
+
+    // Diferencia para mantener reservas
+    const diferencia = Number(stock) - Number(tipo.stock);
+
+    await tipo.update({
+
+      precio,
+
+      stock,
+
+      stockDisponible: Number(tipo.stockDisponible) + diferencia
+
+    });
+
+  };
+
+  await actualizarTipo(
+    'General',
+    data.generalPrecio,
+    data.generalStock
+  );
+
+  await actualizarTipo(
+    'Popular',
+    data.popularPrecio,
+    data.popularStock
+  );
+
+  await actualizarTipo(
+    'Platea',
+    data.plateaPrecio,
+    data.plateaStock
+  );
+
+  await actualizarTipo(
+    'VIP',
+    data.vipPrecio,
+    data.vipStock
+  );
+
+  await actualizarTipo(
+    'Palco',
+    data.palcoPrecio,
+    data.palcoStock
+  );
+
+  return await obtenerPorId(evento.id);
+
 };
 
 const eliminarLogico = async (id) => {

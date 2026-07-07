@@ -21,21 +21,38 @@ const router = express.Router();
 
 router.get('/', listarEventos);
 
-router.post('/', validarEvento, validarCampos, verificarToken, verificarRol('admin'), crearEvento);
+router.post(
+  '/',
+  verificarToken,
+  verificarRol('admin'),
+
+  uploadEvento.fields([
+    {
+      name: 'imagenBanner',
+      maxCount: 1
+    }
+  ]),
+
+  validarEvento,
+  validarCampos,
+
+  crearEvento
+);
 router.put('/:id', validarEvento, validarCampos, verificarToken, verificarRol('admin'), actualizarEvento);
 router.delete('/:id', verificarToken, verificarRol('admin'), eliminarEvento);
 router.put(
-  '/:id/imagenes',
-  validarEvento,
-  validarCampos,
+  '/:id',
   verificarToken,
   verificarRol('admin'),
   uploadEvento.fields([
-    { name: 'imagenBanner', maxCount: 1 },
-    { name: 'imagenMiniatura', maxCount: 1 },
-    { name: 'galeriaImagenes', maxCount: 5 }
+    {
+      name: 'imagenBanner',
+      maxCount: 1
+    }
   ]),
-  subirImagenesEvento
+  validarEvento,
+  validarCampos,
+  actualizarEvento
 );
 
 router.get('/:id', obtenerEventoPorId);

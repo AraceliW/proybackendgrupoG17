@@ -34,12 +34,10 @@ const obtenerEventoPorId = async (req, res) => {
 const crearEvento = async (req, res) => {
   try {
 
-    const { nombre, categoriaDeporte, fecha, hora, estadio, ciudad } = req.body;
-
-    if (!nombre || !categoriaDeporte || !fecha || !hora || !estadio || !ciudad) {
-      return res.status(400).json({
-        mensaje: 'Faltan datos obligatorios del evento'
-      });
+    // Si se subió un banner, guardar la ruta
+    if (req.files?.imagenBanner?.[0]) {
+      req.body.imagenBanner =
+        `/uploads/eventos/${req.files.imagenBanner[0].filename}`;
     }
 
     const evento = await eventoService.crear(req.body);
@@ -50,16 +48,28 @@ const crearEvento = async (req, res) => {
     });
 
   } catch (error) {
+
     res.status(500).json({
       mensaje: 'Error al crear evento',
       error: error.message
     });
+
   }
 };
 
 const actualizarEvento = async (req, res) => {
   try {
-    const evento = await eventoService.actualizar(req.params.id, req.body);
+
+    // Si se seleccionó un nuevo banner
+    if (req.files?.imagenBanner?.[0]) {
+      req.body.imagenBanner =
+        `/uploads/eventos/${req.files.imagenBanner[0].filename}`;
+    }
+
+    const evento = await eventoService.actualizar(
+      req.params.id,
+      req.body
+    );
 
     if (!evento) {
       return res.status(404).json({
@@ -71,11 +81,14 @@ const actualizarEvento = async (req, res) => {
       mensaje: 'Evento actualizado correctamente',
       evento
     });
+
   } catch (error) {
+
     res.status(500).json({
       mensaje: 'Error al actualizar evento',
       error: error.message
     });
+
   }
 };
 const subirImagenesEvento = async (req, res) => {
