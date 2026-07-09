@@ -88,10 +88,12 @@ const confirmarCompra = async (compraId, usuarioId) => {
   const ticket = await ticketService.crearTicket(compra);
   const usuario = await Usuario.findByPk(usuarioId);
 
-    await emailService.enviarTicketPorEmail({
-    usuario,
-    ticket,
-    compra
+    emailService.enviarTicketPorEmail({
+      usuario,
+      ticket,
+      compra
+    }).catch((error) => {
+      console.error('Error al enviar email:', error.message);
     });
 
   return { compra, ticket };  
