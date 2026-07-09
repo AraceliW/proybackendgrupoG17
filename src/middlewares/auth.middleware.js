@@ -22,7 +22,6 @@ const verificarToken = async (req, res, next) => {
         mensaje: 'Usuario no autorizado'
       });
     }
-
     req.usuario = usuario;
     next();
 
