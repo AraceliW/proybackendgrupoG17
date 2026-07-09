@@ -1,24 +1,11 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 require('dotenv').config();
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const enviarTicketPorEmail = async ({ usuario, ticket, compra }) => {
-  const pdfPath = ticket.pdfUrl.replace('/uploads', 'src/uploads');
-
-  const info = await transporter.sendMail({
-    from: `"DIBUTICK" <${process.env.EMAIL_USER}>`,
+  const info = await resend.emails.send({
+    from: 'DIBUTICK <onboarding@resend.dev>',
     to: usuario.email,
     subject: 'Tu entrada DIBUTICK',
     html: `
@@ -27,17 +14,11 @@ const enviarTicketPorEmail = async ({ usuario, ticket, compra }) => {
       <p><b>Código de compra:</b> ${compra.codigoCompra}</p>
       <p><b>Código de ticket:</b> ${ticket.codigoTicket}</p>
       <p><b>Total:</b> $${compra.total}</p>
-      <p>Adjuntamos tu entrada en PDF.</p>
-    `,
-    attachments: [
-      {
-        filename: `ticket-${ticket.codigoTicket}.pdf`,
-        path: pdfPath
-      }
-    ]
+      <p>Tu entrada ya está disponible en tu perfil.</p>
+    `
   });
 
-  console.log('Correo enviado:', info.response);
+  console.log('Correo enviado:', info);
   return info;
 };
 
